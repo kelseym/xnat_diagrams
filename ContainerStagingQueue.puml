@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+title Internal Logic - CS Launch Queue\n\n
+
+actor "Container User" as user
+package Launch {
+    usecase "Resolve Command Line" as rcl
+
+}
+
+
+@enduml
+
+

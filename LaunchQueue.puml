@@ -1,0 +1,19 @@
+
+
+@startjson
+{
+    "id" : "int",
+    "label" : "string",
+    "description" : "string",
+    "command" : {
+    },
+    "agent" : {
+    },
+    "directory_mapping" :
+        {"/dir/in/container" : "/dir/on/xnat"}
+
+
+}
+@endjson
+
+

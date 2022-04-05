@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+title Container Service 4.0
+
+
+state "XNAT Container Service" as xcs {
+    state "Command Resolution" as res {
+      [*] --> Idle
+      Idle --> Configuring : EvConfig
+      Configuring --> Idle : EvConfig
+    }
+
+    res --> xq : Launch Request
+
+    state "Queue Manager" as xq {
+    }
+}
+
+state "Remote Execution Enviroment" as ree {
+
+  state "XNAT Job Doer" as xjd {
+     state "Jobs Request" as jr {
+     }
+
+     state "Job Status Updater" as jsu {
+     }
+  }
+}
+
+jr --> xq : Request
+jsu --> xq : Update
+
+@enduml
