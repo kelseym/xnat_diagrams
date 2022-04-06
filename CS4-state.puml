@@ -11,24 +11,27 @@ state "XNAT Container Service" as xcs {
       Configuring --> Idle : EvConfig
     }
 
-    res --> xq : Launch Request
+    res --> lqs : Launch Request
 
-    state "Queue Manager" as xq {
+    state "Launch Queue Service" as lqs {
     }
 }
 
 state "Remote Execution Enviroment" as ree {
 
   state "XNAT Job Doer" as xjd {
-     state "Jobs Request" as jr {
+     state "Jobs\nRequester" as jr {
      }
 
-     state "Job Status Updater" as jsu {
+     state "Job Status\nUpdater" as jsu {
+     }
+
+     state "Resource\nBroadcaster" as rb {
      }
   }
 }
-
-jr --> xq : Request
-jsu --> xq : Update
+rb --> lqs : Broadcast
+jr --> lqs : Request
+jsu --> lqs : Update
 
 @enduml
