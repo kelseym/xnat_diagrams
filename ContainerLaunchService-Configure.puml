@@ -1,0 +1,71 @@
+@startuml
+'https://plantuml.com/component-diagram
+skinparam componentStyle rectangle
+
+title **Internal Logic - Container Launch Service**\n\n
+
+actor "XNAT Admin" as admin
+actor "XNAT User" as user
+
+package "Job Queue Service" {
+    node "Configure Queues" as config {
+        component Create [
+        **Create** - Add container
+        processing queue
+        ]
+
+        component Read [
+        **Read** - Return individual
+        queue settings
+        ]
+        component Update [
+        **Update** - Modify configuration
+        of individual queues
+        ]
+        component Delete [
+        **Delete** - Remove queue
+        and contents from XNAT
+        ]
+    }
+    node "Job Queues" as queue {
+        component status [
+        **Job Status**
+        ]
+        component enqueue [
+        **Enqueue**
+        ]
+
+    }
+    node "Agent Service" as agentsvc {
+        component agent_auth [
+        ]
+        component in [
+        ]
+    }
+
+    config -[hidden]r- queue
+    status <-d-> agentsvc
+    enqueue <-d-> agentsvc
+}
+
+component "XNAT CS" as xnat_cs {
+  component "Command Launch" as CL
+  CL -> [Command Resolution]
+}
+
+admin -d-> config
+user -down-> xnat_cs
+xnat_cs -down-> queue
+agentsvc <-d- rma
+
+
+cloud {
+    package "Remote Work Agent" as rma {
+
+    }
+}
+
+
+
+
+@enduml

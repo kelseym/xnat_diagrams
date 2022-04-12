@@ -1,0 +1,36 @@
+@startuml
+'https://plantuml.com/component-diagram
+skinparam componentStyle rectangle
+
+title Internal Logic - CS Launch Service\n\n
+
+actor "Container User" as user
+actor "XNAT Admin" as admin
+
+
+node "XNAT CS" {
+  component "Command Launch" as CL
+  CL -> [Command Resolution]
+}
+
+user --> CL
+
+package "Job Queue Service" {
+    component "Configure Queue" as config {
+        interface Create
+        interface Read
+        interface Update
+        interface Delete
+    }
+    component "Enqueue" as enqueue {
+    }
+    component "Agent Service" as agentsvc {
+    }
+
+    config -[hidden]-> enqueue
+    enqueue -[hidden]-> agentsvc
+}
+
+admin -d-> config
+
+@enduml

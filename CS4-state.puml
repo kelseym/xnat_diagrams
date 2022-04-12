@@ -21,6 +21,7 @@ state "Remote Execution Enviroment" as ree {
 
   state "XNAT Job Doer" as xjd {
      state "Jobs\nRequester" as jr {
+        State1 -> State2
      }
 
      state "Job Status\nUpdater" as jsu {

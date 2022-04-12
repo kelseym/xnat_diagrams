@@ -1,0 +1,49 @@
+@startuml C4_Elements
+
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+HIDE_STEREOTYPE()
+
+LAYOUT_AS_SKETCH()
+
+title **Container Service 4 : Decentralized Container Execution Support**\n\n
+
+Person_Ext(user, User)
+
+Boundary(CS, "CS4") {
+    Component(launch, Command Launch, , )
+    Boundary(res, Command Resolution, , ) {
+        Component(xnat_res, Resolve XNAT inputs,, "Resolve XNAT inputs using default, derived, and supplied values")
+        Component(worker_res, Resolve worker inputs ,, "Queue configuration determines inputs required by remote work agent")
+    }
+    Component(qSvc, Worker Queue Service){
+        Component(config, Config Controller)
+        Component(queues, Worker Queues,){
+            ComponentQueue(q0,)
+            ComponentQueue(q1,)
+            ComponentQueue(qN,)
+            q0 -[hidden]R- q1
+            q1 -[hidden]R- qN
+        }
+
+    }
+    Component(qSvcRest, Worker Auth/REST)
+
+    Lay_Down(user, CS)
+    Rel(user, launch,Launch from context UI)
+    Rel(launch, xnat_res, "Request XNAT input values")
+    Rel(launch, worker_res, Request Worker input "Request XNAT input values")
+    Rel(xnat_res, qSvc, )
+    Rel(worker_res, qSvc, )
+    Rel(worker_res, qSvc, "Resolve worker inputs and defaults")
+    Rel(res, user, Prompt for inputs)
+    Rel_U(qSvcRest, qSvc, )
+}
+
+Component_Ext(worker01, Remote Worker Agent,, )
+Component_Ext(worker02, Remote Worker Agent,, )
+
+Rel_Up(worker01, qSvcRest, )
+Rel_Up(worker02, qSvcRest, )
+
+@enduml

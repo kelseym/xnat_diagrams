@@ -1,0 +1,49 @@
+@startuml C4_Elements
+skinparam nodesep 50
+skinparam ranksep 80
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+HIDE_STEREOTYPE()
+LAYOUT_AS_SKETCH()
+
+title **Container Service 4 : Decentralized Container Execution Support**\n\n
+
+Person(admin, "XNAT Admin")
+
+Person(user, "Container User")
+
+Boundary(XNAT, "XNAT", "Tomcat VM") {
+
+    Boundary(CS, "CS4") {
+
+        Container(command_res, "Command Resolution", Existing Service)
+        Container(queue_svc, "Launch Queue Service", Could this be an external service, "Manages multiple job queues, permissions of each, and statuses of remotely executed jobs.")
+        Rel(command_res, queue_svc, "Adds fully resolved command to specified launch queue")
+
+    }
+    Rel(user, command_res, "Container Launch Prompt")
+}
+
+Boundary(resource01, Swarm Cluster, Remote Resource) {
+    Container(remote01, Remote Work Agent, "Swarm Manager", " ")
+}
+
+Boundary(resource02, Single GPU Node, Remote Resource) {
+    Container(remote02, Remote Work Agent, "Docker Server", " ")
+}
+
+Boundary(resource03, CHCP , Remote Resource) {
+    Container(remote03, Remote Work Agent, Slurm Login Node, " ")
+}
+
+Rel_Left(admin, queue_svc, CRUM Operation on Queues)
+Rel(user, queue_svc, "Monitors")
+
+Rel(remote01, queue_svc, Request jobs from subscribed queue)
+Rel(remote02, queue_svc, Request jobs from subscribed queue)
+Rel(remote03, queue_svc, Request jobs from subscribed queue)
+
+Lay_L(user, admin)
+
+
+@enduml
