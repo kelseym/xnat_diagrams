@@ -1,6 +1,9 @@
 @startuml C4_Elements
-skinparam nodesep 50
-skinparam ranksep 80
+'skinparam nodesep 80
+'skinparam ranksep 80
+skinparam classFontColor automatic
+skinparam backgroundColor #White
+scale 0.7
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 HIDE_STEREOTYPE()
@@ -8,42 +11,77 @@ LAYOUT_AS_SKETCH()
 
 title **Container Service 4 : Decentralized Container Execution Support**\n\n
 
-Person(admin, "XNAT Admin")
+Person(user, \nContainer User)
+Person(admin, \nAdmin or\nProject Owner)
 
-Person(user, "Container User")
-
-Boundary(XNAT, "XNAT", "Tomcat VM") {
+Boundary(XNAT, "XNAT", "Tomcat VM") #Strategy {
 
     Boundary(CS, "CS4") {
+        Boundary(prep, Command Preparation\nExisting Services, Java) #White{
+            Container(mod_obj_res, \nModel Object\nResolution)
+            Container(command_res, \nResolve Command\nInputs)
+            Container(container_res, \nResolve Container\nParameters)
+            Rel_R(mod_obj_res, command_res,' ', ,Select & configure\ninput values)
+            Rel_R(command_res, container_res,' ', , Send to command\nresolution queue)
 
-        Container(command_res, "Command Resolution", Existing Service)
-        Container(queue_svc, "Launch Queue Service", Could this be an external service, "Manages multiple job queues, permissions of each, and statuses of remotely executed jobs.")
-        Rel(command_res, queue_svc, "Adds fully resolved command to specified launch queue")
+        }
+
+        Boundary(queue_svc, "Launch Queue Service", Java) #White {
+            Container(queue_routing, Job Router\nManage container\njob to queue routing, , "")
+            Container(queue_config, "Queue Configuration\nConfigure queue\npermissions and scope", , )
+            Container(queue_mngmt, Queue Monitor\nMonitor and report status of queues and corresponding jobs accepted by agents, , "")
+            Lay_D(queue_routing, queue_config)
+            Lay_D(queue_config, queue_mngmt)
+            queue_config -up-> queue_routing
+
+            Boundary(queue_set, Dynamically Allocated Queues, Java | microservice,) {
+                Container(q1, Default Queue\nConfigured for Swarm execution) #LightSlateGrey
+                Container(q2, HPC Queue\nConfigured for Singularity execution) #RosyBrown
+                Container(q3, GPU Queue\nConfigured for Docker execution) #LightSeaGreen
+                Container(q4, Project Specific\nConfigured for custom execution) #SandyBrown
+                Lay_L(queue_routing,q1)
+                Lay_D(q1,q2)
+                Lay_D(q2,q3)
+                Lay_D(q3,q4)
+            }
+        }
+        Rel(container_res, queue_routing, "Add fully resolved command to specified launch queue")
 
     }
-    Rel(user, command_res, "Container Launch Prompt")
 }
 
-Boundary(resource01, Swarm Cluster, Remote Resource) {
-    Container(remote01, Remote Work Agent, "Swarm Manager", " ")
+ Boundary(agents, Remote Agents) {
+    Boundary(resource01, Swarm Cluster, Remote Resource) #Strategy {
+        Container(remote01, Remote Work Agent\nSwarm Manager, "Java/Python/etc") #LightSlateGrey
+    }
+    Boundary(resource02, CHCP , Remote Resource) #Strategy {
+        Container(remote02, Remote Work Agent\nSlurm Login Node, "Java/Python/etc") #RosyBrown
+    }
+    Boundary(resource03, Single GPU Node, Remote Resource) #Strategy {
+        Container(remote03, Remote Work Agent\nDocker Server, "Java/Python/etc") #LightSeaGreen
+    }
+    Boundary(resource04, Dev VM , Remote Resource) #Strategy {
+        Container(remote04, Remote Work Agent\nDocker Server, "Java/Python/etc") #SandyBrown
+    }
 }
 
-Boundary(resource02, Single GPU Node, Remote Resource) {
-    Container(remote02, Remote Work Agent, "Docker Server", " ")
-}
+queue_routing -left-> queue_set
 
-Boundary(resource03, CHCP , Remote Resource) {
-    Container(remote03, Remote Work Agent, Slurm Login Node, " ")
-}
+queue_mngmt -left-> queue_set
 
-Rel_Left(admin, queue_svc, CRUM Operation on Queues)
-Rel(user, queue_svc, "Monitors")
 
-Rel(remote01, queue_svc, Request jobs from subscribed queue)
-Rel(remote02, queue_svc, Request jobs from subscribed queue)
-Rel(remote03, queue_svc, Request jobs from subscribed queue)
+Rel(remote01, q1, Request jobs)
+Rel(remote02, q2, Request jobs)
+Lay_D(resource01, resource02)
+Rel(remote03, q3, Request jobs)
+Lay_D(resource02, resource03)
+Rel(remote04, q4, Request jobs)
+Lay_D(resource03, resource04)
 
-Lay_L(user, admin)
+
+Rel_D(user, mod_obj_res, " ",,Context Menu Launch &\nQueue Selection)
+Rel(admin, queue_config,' ')
+Lay_U(XNAT, admin)
 
 
 @enduml

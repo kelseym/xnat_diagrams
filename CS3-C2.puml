@@ -1,0 +1,41 @@
+@startuml C4_Elements
+skinparam nodesep 100
+'skinparam ranksep 80
+skinparam classFontColor automatic
+skinparam backgroundColor #White
+scale 0.9
+
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+HIDE_STEREOTYPE()
+LAYOUT_AS_SKETCH()
+
+title **Container Service 3 : Container Support via Local Docker API**\n\n
+
+Person(user, "Container User")
+
+Boundary(XNAT, "XNAT", "Tomcat VM") #Strategy {
+
+    Boundary(CS, "CS3", Java) #White {
+        Container(mod_obj_res, \nModel Object\nResolution)
+        Container(command_res, \nResolve Command\nInputs)
+        Container(container_res, \nResolve Container\nParameters)
+        Container(docker_ctrl, \nDocker Control\nAPI) #LightSlateGrey
+        Rel_R(mod_obj_res, command_res,' ', ,Select & configure\ninput values)
+        Rel_D(command_res, container_res,' ', , Send to command\nresolution queue)
+        Rel_R(container_res, docker_ctrl,' ', , Send fully resolved \ncommand)
+
+    }
+}
+
+Boundary(resource01, Swarm Cluster, Remote Resource) #Strategy {
+    Container(remote01, Docker API, "Swarm Manager", " ") #LightSlateGrey
+}
+
+Rel_Left(user, mod_obj_res, " ",,Context Menu Launch)
+
+BiRel_R(remote01, docker_ctrl, Create and Launch Docker Container)
+
+Lay_U(XNAT, user)
+
+@enduml
